@@ -35,4 +35,36 @@ final class ApiClient {
 
         return data
     }
+
+    func makeRegisterRequest(
+        url: URL,
+        username: String,
+        password: String,
+        email: String
+    ) async throws -> Data {
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body = [
+            "username": username,
+            "password": password,
+            "email": email
+        ]
+
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let http = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        guard (200...299).contains(http.statusCode) else {
+            throw URLError(.userAuthenticationRequired)
+        }
+
+        return data
+    }
 }

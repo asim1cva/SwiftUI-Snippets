@@ -1,5 +1,5 @@
 //
-//  LoginView.swift
+//  RegisterView.swift
 //  SwiftUI-Snippets
 //
 //  Created by Asim on 25/11/2025.
@@ -7,12 +7,12 @@
 
 import SwiftUI
 
-struct LoginView: View {
+struct RegisterView: View {
 
     @Binding var navigationPath: NavigationPath
 
-    @StateObject private var vm = LoginViewModel(
-        loginUseCase: LoginUseCase(
+    @StateObject private var vm = RegisterViewModel(
+        registerUseCase: RegisterUseCase(
             repository: AuthRepositoryImpl()
         )
     )
@@ -56,12 +56,12 @@ struct LoginView: View {
             .ignoresSafeArea()
 
             // Glass card
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
 
                 // Header
                 VStack(spacing: 6) {
                     HStack(spacing: 10) {
-                        Image(systemName: "lock.shield.fill")
+                        Image(systemName: "person.badge.plus.fill")
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundStyle(
                                 LinearGradient(
@@ -71,12 +71,12 @@ struct LoginView: View {
                                 )
                             )
 
-                        Text("Welcome Back")
+                        Text("Create Account")
                             .font(.system(.largeTitle, design: .rounded, weight: .bold))
                             .foregroundColor(.white)
                     }
 
-                    Text("Sign in to continue exploring SwiftUI Snippets.")
+                    Text("Sign up to start exploring SwiftUI Snippets.")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
                 }
@@ -86,28 +86,47 @@ struct LoginView: View {
                 VStack(spacing: 16) {
                     AppTextFieldView(
                         title: "Username",
-                        placeholder: "Enter your username",
+                        placeholder: "Choose a username",
                         systemImage: "person.fill",
                         isSecure: false,
                         text: $vm.username
                     )
 
                     AppTextFieldView(
+                        title: "Email",
+                        placeholder: "Enter your email",
+                        systemImage: "envelope.fill",
+                        isSecure: false,
+                        text: $vm.email,
+                        keyboardType: .emailAddress,
+                        textContentType: .emailAddress
+                    )
+
+                    AppTextFieldView(
                         title: "Password",
-                        placeholder: "••••••••",
+                        placeholder: "Create a password",
                         systemImage: "key.fill",
                         isSecure: true,
                         text: $vm.password,
-                        textContentType: .password
+                        textContentType: .newPassword
+                    )
+
+                    AppTextFieldView(
+                        title: "Confirm Password",
+                        placeholder: "Confirm your password",
+                        systemImage: "key.fill",
+                        isSecure: true,
+                        text: $vm.confirmPassword,
+                        textContentType: .newPassword
                     )
                 }
 
                 // Status (error / success)
-            if let error = vm.errorMessage {
+                if let error = vm.errorMessage {
                     HStack(spacing: 8) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(.red.opacity(0.9))
-                Text(error)
+                        Text(error)
                             .font(.footnote)
                             .foregroundColor(.red.opacity(0.95))
                             .multilineTextAlignment(.leading)
@@ -121,11 +140,11 @@ struct LoginView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     )
                     .transition(.opacity.combined(with: .move(edge: .top)))
-                } else if let user = vm.loggedInUser {
+                } else if let user = vm.registeredUser {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.seal.fill")
                             .foregroundStyle(.green, .white)
-                        Text("Welcome, \(user.name)")
+                        Text("Welcome, \(user.name)! Account created successfully.")
                             .font(.footnote.weight(.medium))
                             .foregroundColor(.green.opacity(0.95))
                     }
@@ -140,23 +159,23 @@ struct LoginView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
-                // Login button + loader
+                // Register button + loader
                 AppButtonView(
-                    title: vm.isLoading ? "Signing In..." : "Login",
-                    systemImage: "arrow.right.circle.fill",
+                    title: vm.isLoading ? "Creating Account..." : "Create Account",
+                    systemImage: "person.badge.plus.fill",
                     isLoading: vm.isLoading,
                     style: .primary
                 ) {
-                    Task { await vm.login() }
+                    Task { await vm.register() }
                 }
 
-                // Don't have account link
+                // Already have account link
                 Button {
-                    navigationPath.append(AuthRoute.register)
+                    navigationPath.append(AuthRoute.login)
                 } label: {
-                    Text("Don't have an account? ")
+                    Text("Already have an account? ")
                         .foregroundColor(.white.opacity(0.8)) +
-                    Text("Sign up")
+                    Text("Sign in")
 //                        .foregroundColor(.cyan)
                         .fontWeight(.semibold)
                 }
@@ -164,7 +183,7 @@ struct LoginView: View {
                 .padding(.top, 8)
 
                 // Helper text
-                Text("Your credentials are securely processed using a clean architecture flow.")
+                Text("By creating an account, you agree to our terms and conditions.")
                     .font(.caption2)
                     .foregroundColor(.white.opacity(0.65))
                     .multilineTextAlignment(.center)
