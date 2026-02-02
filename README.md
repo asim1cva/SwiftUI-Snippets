@@ -10,6 +10,11 @@ Modern SwiftUI playground showcasing reusable components, clean architecture, an
 
 ### Screenshots
 
+## 📱 Preview
+
+![Login](Screenshots/login-glass.png)
+
+
 - **Login – Liquid Glass**
 
 ```markdownAdd your own 
