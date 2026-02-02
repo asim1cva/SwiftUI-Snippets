@@ -9,11 +9,10 @@ Modern SwiftUI playground showcasing reusable components, clean architecture, an
 - **Reusable components**: `AppButtonView` and `AppTextFieldView` for consistent styling.
 
 ### Screenshots
-Add your own screenshots to a `Screenshots` folder in the repo and update the paths below.
 
 - **Login – Liquid Glass**
 
-```markdown
+```markdownAdd your own 
 ![Login Screen](Screenshots/login-glass.png)
 ```
 
