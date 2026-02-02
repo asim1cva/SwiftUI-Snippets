@@ -8,8 +8,6 @@ Modern SwiftUI playground showcasing reusable components, clean architecture, an
 - **Clean Architecture**: Separated into `Data`, `Domain`, and `Presentation` layers.
 - **Reusable components**: `AppButtonView` and `AppTextFieldView` for consistent styling.
 
-### Screenshots
-
 ## 📱 Preview
 
 ![Login](Screenshots/login-glass.png)
