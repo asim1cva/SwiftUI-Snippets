@@ -1,5 +1,5 @@
 //
-//  RegisterView.swift
+//  ForgotPasswordView.swift
 //  SwiftUI-Snippets
 //
 //  Created by Asim on 25/11/2025.
@@ -7,55 +7,49 @@
 
 import SwiftUI
 
-struct RegisterView: View {
+struct ForgotPasswordView: View {
 
     @Binding var navigationPath: NavigationPath
-    @StateObject private var vm: RegisterViewModel
-    let onAuthSuccess: (() -> Void)?
+    @StateObject private var vm: ForgotPasswordViewModel
 
     init(
         navigationPath: Binding<NavigationPath>,
-        repository: AuthRepository,
-        onAuthSuccess: (() -> Void)? = nil
+        repository: AuthRepository
     ) {
         self._navigationPath = navigationPath
         self._vm = StateObject(
-            wrappedValue: RegisterViewModel(
-                registerUseCase: RegisterUseCase(
+            wrappedValue: ForgotPasswordViewModel(
+                resetPasswordUseCase: ResetPasswordUseCase(
                     repository: repository
                 )
             )
         )
-        self.onAuthSuccess = onAuthSuccess
     }
 
     var body: some View {
         ZStack {
-            // Liquid gradient background - iOS 26 style
+            // Reuse same liquid gradient background
             AngularGradient(
                 gradient: Gradient(colors: [
-                    Color(red: 0.2, green: 0.4, blue: 1.0),     // Vibrant blue
-                    Color(red: 0.3, green: 0.6, blue: 1.0),     // Bright cyan-blue
-                    Color(red: 0.4, green: 0.8, blue: 1.0),     // Electric cyan
-                    Color(red: 0.6, green: 0.9, blue: 1.0),     // Light cyan
-                    Color(red: 0.8, green: 0.6, blue: 1.0),     // Purple-cyan mix
-                    Color(red: 0.9, green: 0.4, blue: 1.0),     // Bright purple
-                    Color(red: 0.2, green: 0.4, blue: 1.0)      // Back to blue
+                    Color(red: 0.2, green: 0.4, blue: 1.0),
+                    Color(red: 0.3, green: 0.6, blue: 1.0),
+                    Color(red: 0.4, green: 0.8, blue: 1.0),
+                    Color(red: 0.6, green: 0.9, blue: 1.0),
+                    Color(red: 0.8, green: 0.6, blue: 1.0),
+                    Color(red: 0.9, green: 0.4, blue: 1.0),
+                    Color(red: 0.2, green: 0.4, blue: 1.0)
                 ]),
                 center: .center
             )
             .ignoresSafeArea()
 
-            // Enhanced overlay for better contrast and depth
             ZStack {
-                // Dark overlay for text readability
                 Color.black.opacity(0.3)
-                // Subtle color tint overlay
                 LinearGradient(
                     colors: [
-                        Color(red: 1.0, green: 0.2, blue: 0.8).opacity(0.1),  // Vibrant magenta
-                        Color(red: 0.8, green: 0.2, blue: 1.0).opacity(0.05), // Electric purple
-                        Color(red: 0.0, green: 0.8, blue: 0.4).opacity(0.08)  // Emerald green
+                        Color(red: 1.0, green: 0.2, blue: 0.8).opacity(0.1),
+                        Color(red: 0.8, green: 0.2, blue: 1.0).opacity(0.05),
+                        Color(red: 0.0, green: 0.8, blue: 0.4).opacity(0.08)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -63,14 +57,13 @@ struct RegisterView: View {
             }
             .ignoresSafeArea()
 
-            // Glass card
-            VStack(spacing: 20) {
+            VStack(spacing: 22) {
 
                 // Header
                 VStack(spacing: 6) {
                     HStack(spacing: 10) {
-                        Image(systemName: "person.badge.plus.fill")
-                            .font(.system(size: 28, weight: .semibold))
+                        Image(systemName: "key.fill")
+                            .font(.system(size: 26, weight: .semibold))
                             .foregroundStyle(
                                 LinearGradient(
                                     colors: [.cyan, .mint],
@@ -79,14 +72,15 @@ struct RegisterView: View {
                                 )
                             )
 
-                        Text("Create Account")
-                            .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                        Text("Reset Password")
+                            .font(.system(.title, design: .rounded, weight: .bold))
                             .foregroundColor(.white)
                     }
 
-                    Text("Sign up to start exploring SwiftUI Snippets.")
+                    Text("Enter your username and a new password to reset your account.")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.center)
                 }
                 .padding(.bottom, 8)
 
@@ -94,34 +88,24 @@ struct RegisterView: View {
                 VStack(spacing: 16) {
                     AppTextFieldView(
                         title: "Username",
-                        placeholder: "Choose a username",
+                        placeholder: "Enter your username",
                         systemImage: "person.fill",
                         isSecure: false,
                         text: $vm.username
                     )
 
                     AppTextFieldView(
-                        title: "Email",
-                        placeholder: "Enter your email",
-                        systemImage: "envelope.fill",
-                        isSecure: false,
-                        text: $vm.email,
-                        keyboardType: .emailAddress,
-                        textContentType: .emailAddress
-                    )
-
-                    AppTextFieldView(
-                        title: "Password",
-                        placeholder: "Create a password",
+                        title: "New Password",
+                        placeholder: "Create a new password",
                         systemImage: "key.fill",
                         isSecure: true,
-                        text: $vm.password,
+                        text: $vm.newPassword,
                         textContentType: .newPassword
                     )
 
                     AppTextFieldView(
                         title: "Confirm Password",
-                        placeholder: "Confirm your password",
+                        placeholder: "Re-enter new password",
                         systemImage: "key.fill",
                         isSecure: true,
                         text: $vm.confirmPassword,
@@ -129,7 +113,7 @@ struct RegisterView: View {
                     )
                 }
 
-                // Status (error / success)
+                // Status
                 if let error = vm.errorMessage {
                     HStack(spacing: 8) {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -148,11 +132,11 @@ struct RegisterView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     )
                     .transition(.opacity.combined(with: .move(edge: .top)))
-                } else if let user = vm.registeredUser {
+                } else if vm.isSuccess {
                     HStack(spacing: 8) {
                         Image(systemName: "checkmark.seal.fill")
                             .foregroundStyle(.green, .white)
-                        Text("Welcome, \(user.name)! Account created successfully.")
+                        Text("Password updated successfully. You can now sign in.")
                             .font(.footnote.weight(.medium))
                             .foregroundColor(.green.opacity(0.95))
                     }
@@ -167,35 +151,29 @@ struct RegisterView: View {
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
-                // Register button + loader
+                // Reset button
                 AppButtonView(
-                    title: vm.isLoading ? "Creating Account..." : "Create Account",
-                    systemImage: "person.badge.plus.fill",
+                    title: vm.isLoading ? "Updating..." : "Update Password",
+                    systemImage: "arrow.triangle.2.circlepath",
                     isLoading: vm.isLoading,
                     style: .primary
                 ) {
-                    Task { await vm.register() }
+                    Task { await vm.resetPassword() }
                 }
 
-                // Already have account link
+                // Back to login
                 Button {
-                    navigationPath.append(AuthRoute.login)
+                    // Pop back to login screen
+                    navigationPath.removeLast(navigationPath.count)
                 } label: {
-                    Text("Already have an account? ")
+                    Text("Remembered your password? ")
                         .foregroundColor(.white.opacity(0.8)) +
-                    Text("Sign in")
-//                        .foregroundColor(.cyan)
+                    Text("Go back to Sign in")
+                        .foregroundColor(.white)
                         .fontWeight(.semibold)
                 }
                 .font(.footnote)
                 .padding(.top, 8)
-
-                // Helper text
-                Text("By creating an account, you agree to our terms and conditions.")
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.65))
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 4)
             }
             .padding(24)
             .background(
@@ -234,10 +212,6 @@ struct RegisterView: View {
             .padding(.horizontal, 24)
             .padding(.vertical, 40)
         }
-        .onReceive(vm.$registerSuccessful) { success in
-            if success {
-                onAuthSuccess?()
-            }
-        }
     }
 }
+

@@ -8,19 +8,27 @@
 import SwiftUI
 
 struct LoginView: View {
-
+    
     @Binding var navigationPath: NavigationPath
-
-    @StateObject private var vm = LoginViewModel(
-        loginUseCase: LoginUseCase(
-            repository: AuthRepositoryImpl()
-        )
-    )
-
-    init(navigationPath: Binding<NavigationPath>) {
+    @StateObject private var vm: LoginViewModel
+    let onAuthSuccess: (() -> Void)?
+    
+    init(
+        navigationPath: Binding<NavigationPath>,
+        repository: AuthRepository,
+        onAuthSuccess: (() -> Void)? = nil
+    ) {
         self._navigationPath = navigationPath
+        self._vm = StateObject(
+            wrappedValue: LoginViewModel(
+                loginUseCase: LoginUseCase(
+                    repository: repository
+                )
+            )
+        )
+        self.onAuthSuccess = onAuthSuccess
     }
-
+    
     var body: some View {
         ZStack {
             // Liquid gradient background - iOS 26 style
@@ -37,7 +45,7 @@ struct LoginView: View {
                 center: .center
             )
             .ignoresSafeArea()
-
+            
             // Enhanced overlay for better contrast and depth
             ZStack {
                 // Dark overlay for text readability
@@ -54,10 +62,10 @@ struct LoginView: View {
                 )
             }
             .ignoresSafeArea()
-
+            
             // Glass card
             VStack(spacing: 24) {
-
+                
                 // Header
                 VStack(spacing: 6) {
                     HStack(spacing: 10) {
@@ -70,18 +78,18 @@ struct LoginView: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-
+                        
                         Text("Welcome Back")
                             .font(.system(.largeTitle, design: .rounded, weight: .bold))
                             .foregroundColor(.white)
                     }
-
+                    
                     Text("Sign in to continue exploring SwiftUI Snippets.")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .padding(.bottom, 8)
-
+                
                 // Fields
                 VStack(spacing: 16) {
                     AppTextFieldView(
@@ -91,7 +99,7 @@ struct LoginView: View {
                         isSecure: false,
                         text: $vm.username
                     )
-
+                    
                     AppTextFieldView(
                         title: "Password",
                         placeholder: "••••••••",
@@ -101,13 +109,24 @@ struct LoginView: View {
                         textContentType: .password
                     )
                 }
-
+                
+                // Forgot password
+                Button {
+                    navigationPath.append(AuthRoute.forgotPassword)
+                } label: {
+                    Text("Forgot password?")
+                        .font(.footnote)
+                        .foregroundColor(.white.opacity(0.85))
+                        .underline()
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+                
                 // Status (error / success)
-            if let error = vm.errorMessage {
+                if let error = vm.errorMessage {
                     HStack(spacing: 8) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(.red.opacity(0.9))
-                Text(error)
+                        Text(error)
                             .font(.footnote)
                             .foregroundColor(.red.opacity(0.95))
                             .multilineTextAlignment(.leading)
@@ -139,7 +158,7 @@ struct LoginView: View {
                     )
                     .transition(.opacity.combined(with: .move(edge: .top)))
                 }
-
+                
                 // Login button + loader
                 AppButtonView(
                     title: vm.isLoading ? "Signing In..." : "Login",
@@ -149,7 +168,7 @@ struct LoginView: View {
                 ) {
                     Task { await vm.login() }
                 }
-
+                
                 // Don't have account link
                 Button {
                     navigationPath.append(AuthRoute.register)
@@ -157,55 +176,18 @@ struct LoginView: View {
                     Text("Don't have an account? ")
                         .foregroundColor(.white.opacity(0.8)) +
                     Text("Sign up")
-//                        .foregroundColor(.cyan)
+                    //                        .foregroundColor(.cyan)
                         .fontWeight(.semibold)
                 }
                 .font(.footnote)
                 .padding(.top, 8)
-
-                // Helper text
-                Text("Your credentials are securely processed using a clean architecture flow.")
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.65))
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 4)
             }
-            .padding(24)
-            .background(
-                RoundedRectangle(cornerRadius: 32, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.25),
-                                Color.white.opacity(0.08),
-                                Color.white.opacity(0.15)
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .background(.ultraThinMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 32, style: .continuous)
-                            .stroke(
-                                LinearGradient(
-                                    colors: [
-                                        Color.white.opacity(0.9),
-                                        Color.cyan.opacity(0.6),
-                                        Color.white.opacity(0.2)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1.5
-                            )
-                    )
-                    .shadow(color: Color.black.opacity(0.6), radius: 50, x: 0, y: 30)
-                    .shadow(color: Color(red: 1.0, green: 0.5, blue: 0.2).opacity(0.25), radius: 20, x: 0, y: 10)
-            )
-            .padding(.horizontal, 24)
-            .padding(.vertical, 40)
+            .padding()
+            .onReceive(vm.$loginSuccessful) { success in
+                if success {
+                    onAuthSuccess?()
+                }
+            }
         }
     }
 }

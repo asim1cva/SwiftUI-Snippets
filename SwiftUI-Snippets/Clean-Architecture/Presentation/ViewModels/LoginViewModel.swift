@@ -15,6 +15,7 @@ final class LoginViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var loggedInUser: User?
+    @Published var loginSuccessful = false
 
     private let loginUseCase: LoginUseCase
 
@@ -25,6 +26,7 @@ final class LoginViewModel: ObservableObject {
     func login() async {
         isLoading = true
         errorMessage = nil
+        loginSuccessful = false
 
         do {
             let user = try await loginUseCase.execute(
@@ -32,6 +34,12 @@ final class LoginViewModel: ObservableObject {
                 password: password
             )
             loggedInUser = user
+
+            // Save session to UserDefaults
+            let sessionManager = UserSessionManager()
+            sessionManager.saveLoginSession(username: user.name, userId: user.id)
+
+            loginSuccessful = true
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -17,6 +17,7 @@ final class RegisterViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var registeredUser: User?
+    @Published var registerSuccessful = false
 
     private let registerUseCase: RegisterUseCase
 
@@ -48,6 +49,7 @@ final class RegisterViewModel: ObservableObject {
 
         isLoading = true
         errorMessage = nil
+        registerSuccessful = false
 
         do {
             let user = try await registerUseCase.execute(
@@ -56,6 +58,12 @@ final class RegisterViewModel: ObservableObject {
                 email: email
             )
             registeredUser = user
+
+            // Auto-login after successful registration
+            let sessionManager = UserSessionManager()
+            sessionManager.saveLoginSession(username: user.name, userId: user.id)
+
+            registerSuccessful = true
         } catch {
             errorMessage = error.localizedDescription
         }

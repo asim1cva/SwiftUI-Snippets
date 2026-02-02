@@ -6,12 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct SwiftUI_SnippetsApp: App {
     var body: some Scene {
         WindowGroup {
-            AuthRootView()
+            RootView()
 //            ContentView()
         }
     }

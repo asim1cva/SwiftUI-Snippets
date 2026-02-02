@@ -7,42 +7,69 @@
 
 import Foundation
 
+enum AuthError: LocalizedError {
+    case invalidCredentials
+    case userAlreadyExists
+    case userNotFound
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidCredentials:
+            return "Invalid username or password."
+        case .userAlreadyExists:
+            return "This username is already registered."
+        case .userNotFound:
+            return "We couldn't find an account with that username."
+        }
+    }
+}
+
 final class AuthRepositoryImpl: AuthRepository {
 
-    private let apiClient: ApiClient
-    private let loginURL = "https://your-api.com/login"
-    private let registerURL = "https://your-api.com/register"
+    private let localUserStore: LocalUserStore
 
-    init(apiClient: ApiClient = ApiClient()) {
-        self.apiClient = apiClient
+    init(localUserStore: LocalUserStore) {
+        self.localUserStore = localUserStore
     }
 
     func login(username: String, password: String) async throws -> User {
-        guard let url = URL(string: loginURL) else {
-            throw URLError(.badURL)
+        // Look up user in SwiftData
+        guard let local = localUserStore.findUser(username: username, password: password) else {
+            throw AuthError.invalidCredentials
         }
 
-        let data = try await apiClient.makeRequest(
-            url: url,
-            username: username,
-            password: password
+        // Map LocalUserEntity to domain User
+        return User(
+            id: Int.random(in: 1...1_000_000),
+            name: local.username,
+            email: local.email
         )
-
-        return try JSONDecoder().decode(User.self, from: data)
     }
 
     func register(username: String, password: String, email: String) async throws -> User {
-        guard let url = URL(string: registerURL) else {
-            throw URLError(.badURL)
+        // Ensure username is not already taken
+        if localUserStore.findUser(byUsername: username) != nil {
+            throw AuthError.userAlreadyExists
         }
 
-        let data = try await apiClient.makeRegisterRequest(
-            url: url,
-            username: username,
-            password: password,
+        // Persist to SwiftData
+        localUserStore.saveUser(username: username, password: password, email: email)
+
+        // Return a synthetic User domain object
+        return User(
+            id: Int.random(in: 1...1_000_000),
+            name: username,
             email: email
         )
+    }
 
-        return try JSONDecoder().decode(User.self, from: data)
+    func resetPassword(username: String, newPassword: String) async throws {
+        guard let existing = localUserStore.findUser(byUsername: username) else {
+            throw AuthError.userNotFound
+        }
+
+        // Update password and persist via SwiftData
+        existing.password = newPassword
+        localUserStore.saveExistingUser(existing)
     }
 }
