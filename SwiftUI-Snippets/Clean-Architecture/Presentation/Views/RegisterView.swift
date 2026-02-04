@@ -81,12 +81,12 @@ struct RegisterView: View {
 
                         Text("Create Account")
                             .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                     }
 
                     Text("Sign up to start exploring SwiftUI Snippets.")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.secondary)
                 }
                 .padding(.bottom, 8)
 
@@ -182,7 +182,7 @@ struct RegisterView: View {
                     navigationPath.append(AuthRoute.login)
                 } label: {
                     Text("Already have an account? ")
-                        .foregroundColor(.white.opacity(0.8)) +
+                        .foregroundColor(.secondary) +
                     Text("Sign in")
 //                        .foregroundColor(.cyan)
                         .fontWeight(.semibold)
@@ -193,7 +193,7 @@ struct RegisterView: View {
                 // Helper text
                 Text("By creating an account, you agree to our terms and conditions.")
                     .font(.caption2)
-                    .foregroundColor(.white.opacity(0.65))
+                            .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .padding(.top, 4)
             }

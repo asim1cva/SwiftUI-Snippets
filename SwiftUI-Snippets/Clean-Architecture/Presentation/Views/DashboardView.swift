@@ -6,48 +6,118 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct DashboardView: View {
     @StateObject private var vm = DashboardViewModel()
     @State private var selectedTab = 0
-    
+    @State private var gradientRotation: Angle = .zero
+
+    // Adaptive text color based on theme
+    private var textColor: Color {
+        vm.darkModeEnabled ? .white : .black
+    }
+
+    private var secondaryTextColor: Color {
+        vm.darkModeEnabled ? .white.opacity(0.8) : .black.opacity(0.7)
+    }
+
+    private var tertiaryTextColor: Color {
+        vm.darkModeEnabled ? .white.opacity(0.5) : .black.opacity(0.5)
+    }
+    @Environment(\.colorScheme) var colorScheme
+
     var body: some View {
         ZStack {
-            // Shared liquid gradient background for all tabs
-            AngularGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.2, green: 0.4, blue: 1.0),     // Vibrant blue
-                    Color(red: 0.3, green: 0.6, blue: 1.0),     // Bright cyan-blue
-                    Color(red: 0.4, green: 0.8, blue: 1.0),     // Electric cyan
-                    Color(red: 0.6, green: 0.9, blue: 1.0),     // Light cyan
-                    Color(red: 0.8, green: 0.6, blue: 1.0),     // Purple-cyan mix
-                    Color(red: 0.9, green: 0.4, blue: 1.0),     // Bright purple
-                    Color(red: 0.2, green: 0.4, blue: 1.0)      // Back to blue
-                ]),
-                center: .center
-            )
-            .ignoresSafeArea()
-            
-            // Enhanced overlay for better contrast and depth - matching login theme
-            ZStack {
-                // Dark overlay for text readability
-                Color.black.opacity(0.3)
-                // Subtle color tint overlay
-                LinearGradient(
-                    colors: [
-                        Color(red: 1.0, green: 0.2, blue: 0.8).opacity(0.1),  // Vibrant magenta
-                        Color(red: 0.8, green: 0.2, blue: 1.0).opacity(0.05), // Electric purple
-                        Color(red: 0.0, green: 0.8, blue: 0.4).opacity(0.08)  // Emerald green
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
+            // Adaptive background based on theme
+            Group {
+                if vm.darkModeEnabled {
+                    // Dark mode background
+                    AngularGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 0.1, green: 0.1, blue: 0.2),     // Deep navy
+                            Color(red: 0.2, green: 0.1, blue: 0.3),     // Dark purple
+                            Color(red: 0.1, green: 0.2, blue: 0.4),     // Dark blue
+                            Color(red: 0.3, green: 0.1, blue: 0.4),     // Purple accent
+                            Color(red: 0.2, green: 0.2, blue: 0.3),     // Muted indigo
+                            Color(red: 0.1, green: 0.1, blue: 0.2)      // Back to deep navy
+                        ]),
+                        center: .center
+                    )
+                } else {
+                    // Light mode background - enhanced with warmer, brighter colors
+                    AngularGradient(
+                        gradient: Gradient(colors: [
+                            Color(red: 0.95, green: 0.85, blue: 0.4),    // Warm gold
+                            Color(red: 1.0, green: 0.7, blue: 0.5),      // Coral pink
+                            Color(red: 0.8, green: 0.9, blue: 0.6),      // Mint green
+                            Color(red: 0.6, green: 0.8, blue: 1.0),      // Sky blue
+                            Color(red: 0.9, green: 0.6, blue: 1.0),      // Lavender
+                            Color(red: 1.0, green: 0.8, blue: 0.6),      // Peach
+                            Color(red: 0.95, green: 0.85, blue: 0.4)     // Back to gold
+                        ]),
+                        center: .center
+                    )
+                }
             }
             .ignoresSafeArea()
-            
+
+            // Adaptive overlay for better contrast and depth
+            Group {
+                if vm.darkModeEnabled {
+                    // Dark mode overlay
+                    ZStack {
+                        Color.black.opacity(0.4)
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.2, green: 0.2, blue: 0.4).opacity(0.2),
+                                Color(red: 0.3, green: 0.1, blue: 0.5).opacity(0.1),
+                                Color.clear
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    }
+                } else {
+                    // Light mode overlay - subtle for bright backgrounds
+                    ZStack {
+                        Color.black.opacity(0.25)
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.2),      // Bright highlight
+                                Color.white.opacity(0.1),      // Soft glow
+                                Color.white.opacity(0.05),     // Gentle fade
+                                Color.white.opacity(0.15)      // Subtle contrast
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    }
+                }
+            }
+            .ignoresSafeArea()
+            .id(vm.darkModeEnabled) // Force view update when theme changes
+            .hueRotation(gradientRotation)
+            .brightness(vm.darkModeEnabled ? 0 : 0.05) // Slight brightness boost for light theme
+            .saturation(vm.darkModeEnabled ? 0.8 : 1.2) // Enhanced saturation for light theme
+            .onAppear {
+                // Subtle gradient animation for light theme
+                if !vm.darkModeEnabled {
+                    withAnimation(.linear(duration: 20).repeatForever(autoreverses: true)) {
+                        gradientRotation = .degrees(10)
+                    }
+                }
+            }
+            .onChange(of: vm.darkModeEnabled) { newValue in
+                // Animate gradient rotation based on theme
+                withAnimation(.easeInOut(duration: 1.0)) {
+                    gradientRotation = newValue ? .zero : .degrees(10)
+                }
+            }
+
             TabView(selection: $selectedTab) {
                 // Home Tab
-                HomeTabContent()
+                HomeTabContent(isDarkMode: vm.darkModeEnabled, textColor: textColor, secondaryTextColor: secondaryTextColor)
                     .tabItem {
                         VStack(spacing: 4) {
                             Image(systemName: selectedTab == 0 ? "house.fill" : "house")
@@ -59,7 +129,7 @@ struct DashboardView: View {
                     .tag(0)
                 
                 // Profile Tab
-                ProfileTabContent(viewModel: vm)
+                ProfileTabContent(viewModel: vm, isDarkMode: vm.darkModeEnabled, textColor: textColor, secondaryTextColor: secondaryTextColor)
                     .tabItem {
                         VStack(spacing: 4) {
                             Image(systemName: selectedTab == 1 ? "person.fill" : "person")
@@ -71,7 +141,7 @@ struct DashboardView: View {
                     .tag(1)
                 
                 // Settings Tab
-                SettingsTabContent(viewModel: vm)
+                SettingsTabContent(viewModel: vm, isDarkMode: vm.darkModeEnabled, textColor: textColor, secondaryTextColor: secondaryTextColor)
                     .tabItem {
                         VStack(spacing: 4) {
                             Image(systemName: selectedTab == 2 ? "gear" : "gear")
@@ -83,7 +153,7 @@ struct DashboardView: View {
                     .tag(2)
                 
                 // Snippets Tab
-                SnippetsTabContent()
+                SnippetsTabContent(isDarkMode: vm.darkModeEnabled, textColor: textColor, secondaryTextColor: secondaryTextColor)
                     .tabItem {
                         VStack(spacing: 4) {
                             Image(systemName: selectedTab == 3 ? "swift" : "swift")
@@ -97,24 +167,30 @@ struct DashboardView: View {
             .accentColor(Color(red: 0.3, green: 0.8, blue: 1.0)) // Cyan accent for tabs
             .tabViewStyle(.automatic)
             .onAppear {
-                // Customize tab bar appearance
+                // Ensure theme is applied when dashboard appears
+                vm.updateAppearance()
+
+                // Customize tab bar appearance with adaptive colors
                 let appearance = UITabBarAppearance()
                 appearance.configureWithTransparentBackground()
-                
-                // Glass-like background
-                appearance.backgroundEffect = UIBlurEffect(style: .systemUltraThinMaterial)
-                
-                // Custom colors
-                appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color(red: 0.3, green: 0.8, blue: 1.0))
+
+                // Adaptive glass-like background
+                appearance.backgroundEffect = vm.darkModeEnabled ?
+                    UIBlurEffect(style: .systemThinMaterialDark) :
+                    UIBlurEffect(style: .systemThinMaterialLight)
+
+                // Custom colors that work in both themes
+                let accentColor = UIColor(Color(red: 0.3, green: 0.8, blue: 1.0))
+                appearance.stackedLayoutAppearance.selected.iconColor = accentColor
                 appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
-                    .foregroundColor: UIColor(Color(red: 0.3, green: 0.8, blue: 1.0)),
+                    .foregroundColor: accentColor,
                     .font: UIFont.systemFont(ofSize: 10, weight: .semibold)
                 ]
                 appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
                     .foregroundColor: UIColor.white.withAlphaComponent(0.7),
                     .font: UIFont.systemFont(ofSize: 10, weight: .regular)
                 ]
-                
+
                 UITabBar.appearance().standardAppearance = appearance
                 UITabBar.appearance().scrollEdgeAppearance = appearance
             }
@@ -125,6 +201,10 @@ struct DashboardView: View {
 // MARK: - Home Tab Content
 
 struct HomeTabContent: View {
+    let isDarkMode: Bool
+    let textColor: Color
+    let secondaryTextColor: Color
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -134,8 +214,14 @@ struct HomeTabContent: View {
                         Image(systemName: "house.fill")
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundStyle(
+                                isDarkMode ?
                                 LinearGradient(
-                                    colors: [.cyan, .mint],
+                                    colors: [.purple, .blue],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ) :
+                                LinearGradient(
+                                    colors: [.orange, .pink],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -143,12 +229,12 @@ struct HomeTabContent: View {
                         
                         Text("Welcome Home")
                             .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(textColor)
                     }
-                    
+
                     Text("Explore your SwiftUI journey")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(secondaryTextColor)
                 }
                 .padding(.bottom, 8)
                 .padding(.top, 20)
@@ -175,7 +261,7 @@ struct HomeTabContent: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Recent Activity")
                         .font(.title2.bold())
-                        .foregroundColor(.white)
+                        .foregroundColor(textColor)
                         .padding(.horizontal, 20)
                     
                     VStack(spacing: 12) {
@@ -183,21 +269,27 @@ struct HomeTabContent: View {
                             icon: "person.badge.plus.fill",
                             title: "Account Created",
                             subtitle: "Welcome to SwiftUI Snippets!",
-                            color: .green
+                            color: .green,
+                            textColor: textColor,
+                            secondaryTextColor: secondaryTextColor
                         )
-                        
+
                         ActivityRow(
                             icon: "lock.shield.fill",
                             title: "Secure Login",
                             subtitle: "Successfully logged in",
-                            color: .blue
+                            color: .blue,
+                            textColor: textColor,
+                            secondaryTextColor: secondaryTextColor
                         )
-                        
+
                         ActivityRow(
                             icon: "sparkles",
                             title: "New Features",
                             subtitle: "Liquid glassmorphism unlocked",
-                            color: .purple
+                            color: .purple,
+                            textColor: textColor,
+                            secondaryTextColor: secondaryTextColor
                         )
                     }
                     .padding(20)
@@ -218,7 +310,7 @@ struct HomeTabContent: View {
                 VStack(alignment: .leading, spacing: 16) {
                     Text("Featured Snippets")
                         .font(.title2.bold())
-                        .foregroundColor(.white)
+                        .foregroundColor(textColor)
                         .padding(.horizontal, 20)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -259,7 +351,10 @@ struct HomeTabContent: View {
 
 struct ProfileTabContent: View {
     @ObservedObject var viewModel: DashboardViewModel
-    
+    let isDarkMode: Bool
+    let textColor: Color
+    let secondaryTextColor: Color
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -296,12 +391,12 @@ struct ProfileTabContent: View {
                     VStack(spacing: 8) {
                         Text(viewModel.username ?? "User")
                             .font(.system(.title, design: .rounded, weight: .bold))
-                            .foregroundColor(.white)
-                        
+                            .foregroundColor(textColor)
+
                         if let duration = viewModel.sessionDurationString {
                             Text("Session: \(duration)")
                                 .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.8))
+                                .foregroundColor(secondaryTextColor)
                         }
                     }
                 }
@@ -314,21 +409,27 @@ struct ProfileTabContent: View {
                         title: "Account Status",
                         value: "Active",
                         icon: "checkmark.seal.fill",
-                        color: .green
+                        color: .green,
+                        textColor: textColor,
+                        secondaryTextColor: secondaryTextColor
                     )
-                    
+
                     ProfileInfoCard(
                         title: "Member Since",
                         value: "Today",
                         icon: "calendar",
-                        color: .blue
+                        color: .blue,
+                        textColor: textColor,
+                        secondaryTextColor: secondaryTextColor
                     )
-                    
+
                     ProfileInfoCard(
                         title: "SwiftUI Level",
                         value: "Expert",
                         icon: "star.fill",
-                        color: .yellow
+                        color: .yellow,
+                        textColor: textColor,
+                        secondaryTextColor: secondaryTextColor
                     )
                 }
                 .padding(20)
@@ -366,7 +467,10 @@ struct ProfileTabContent: View {
 
 struct SettingsTabContent: View {
     @ObservedObject var viewModel: DashboardViewModel
-    
+    let isDarkMode: Bool
+    let textColor: Color
+    let secondaryTextColor: Color
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -376,6 +480,12 @@ struct SettingsTabContent: View {
                         Image(systemName: "gear")
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundStyle(
+                                isDarkMode ?
+                                LinearGradient(
+                                    colors: [.orange, .red],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ) :
                                 LinearGradient(
                                     colors: [.cyan, .purple],
                                     startPoint: .topLeading,
@@ -385,12 +495,12 @@ struct SettingsTabContent: View {
                         
                         Text("Settings")
                             .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(textColor)
                     }
-                    
+
                     Text("Customize your experience")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(secondaryTextColor)
                 }
                 .padding(24)
                 .background(
@@ -432,41 +542,53 @@ struct SettingsTabContent: View {
                         title: "Push Notifications",
                         subtitle: "Receive updates and reminders",
                         icon: "bell.fill",
-                        color: .orange, isOn: $viewModel.notificationsEnabled
+                        color: .orange,
+                        textColor: textColor,
+                        secondaryTextColor: secondaryTextColor,
+                        isOn: $viewModel.notificationsEnabled
                     )
-                    
-                    SettingsToggleCard(
-                        title: "Dark Mode",
-                        subtitle: "Enable dark theme (coming soon)",
-                        icon: "moon.fill",
-                        color: .purple, isOn: $viewModel.darkModeEnabled
-                    )
+
+                        SettingsToggleCard(
+                            title: "Dark Mode",
+                            subtitle: "Toggle between light and dark themes",
+                            icon: "moon.fill",
+                            color: .purple,
+                            textColor: textColor,
+                            secondaryTextColor: secondaryTextColor,
+                            isOn: $viewModel.darkModeEnabled
+                        )
                     
                     SettingsActionCard(
                         title: "Change Password",
                         subtitle: "Update your login credentials",
                         icon: "key.fill",
                         color: .blue,
+                        textColor: textColor,
+                        secondaryTextColor: secondaryTextColor,
                         action: {
                             // Navigate to change password
                         }
                     )
-                    
+
                     SettingsActionCard(
                         title: "Privacy Policy",
                         subtitle: "Learn about data usage",
                         icon: "hand.raised.fill",
                         color: .green,
+                        textColor: textColor,
+                        secondaryTextColor: secondaryTextColor,
                         action: {
                             // Show privacy policy
                         }
                     )
-                    
+
                     SettingsActionCard(
                         title: "Help & Support",
                         subtitle: "Get help or contact support",
                         icon: "questionmark.circle.fill",
                         color: .cyan,
+                        textColor: textColor,
+                        secondaryTextColor: secondaryTextColor,
                         action: {
                             // Show help
                         }
@@ -484,6 +606,9 @@ struct SettingsTabContent: View {
 // MARK: - Snippets Tab Content
 
 struct SnippetsTabContent: View {
+    let isDarkMode: Bool
+    let textColor: Color
+    let secondaryTextColor: Color
     let snippets = [
         ("Glassmorphism", "Modern frosted glass UI effects", "sparkles"),
         ("SwiftData", "Apple's new ORM solution", "externaldrive.fill"),
@@ -502,6 +627,12 @@ struct SnippetsTabContent: View {
                         Image(systemName: "swift")
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundStyle(
+                                isDarkMode ?
+                                LinearGradient(
+                                    colors: [.yellow, .orange],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ) :
                                 LinearGradient(
                                     colors: [.orange, .red],
                                     startPoint: .topLeading,
@@ -511,12 +642,12 @@ struct SnippetsTabContent: View {
                         
                         Text("SwiftUI Snippets")
                             .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(textColor)
                     }
-                    
+
                     Text("Explore amazing SwiftUI techniques")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(secondaryTextColor)
                 }
                 .padding(.bottom, 8)
                 .padding(.top, 20)
@@ -547,7 +678,9 @@ struct ActivityRow: View {
     let title: String
     let subtitle: String
     let color: Color
-    
+    let textColor: Color
+    let secondaryTextColor: Color
+
     var body: some View {
         HStack(spacing: 16) {
             ZStack {
@@ -563,17 +696,17 @@ struct ActivityRow: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
-                    .foregroundColor(.white)
-                
+                    .foregroundColor(textColor)
+
                 Text(subtitle)
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(secondaryTextColor)
             }
             
             Spacer()
             
             Image(systemName: "chevron.right")
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(secondaryTextColor)
                 .font(.system(size: 14))
         }
         .padding(.vertical, 12)
@@ -619,7 +752,9 @@ struct ProfileInfoCard: View {
     let value: String
     let icon: String
     let color: Color
-    
+    let textColor: Color
+    let secondaryTextColor: Color
+
     var body: some View {
         HStack(spacing: 16) {
             ZStack {
@@ -635,11 +770,11 @@ struct ProfileInfoCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.7))
-                
+                    .foregroundColor(secondaryTextColor)
+
                 Text(value)
                     .font(.title3.bold())
-                    .foregroundColor(.white)
+                    .foregroundColor(textColor)
             }
             
             Spacer()
@@ -653,8 +788,10 @@ struct SettingsToggleCard: View {
     let subtitle: String
     let icon: String
     let color: Color
+    let textColor: Color
+    let secondaryTextColor: Color
     @Binding var isOn: Bool
-    
+
     var body: some View {
         HStack(spacing: 16) {
             ZStack {
@@ -670,15 +807,15 @@ struct SettingsToggleCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.headline)
-                    .foregroundColor(.white)
-                
+                    .foregroundColor(textColor)
+
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(secondaryTextColor)
             }
-            
+
             Spacer()
-            
+
             Toggle("", isOn: $isOn)
                 .labelsHidden()
                 .tint(color)
@@ -692,8 +829,10 @@ struct SettingsActionCard: View {
     let subtitle: String
     let icon: String
     let color: Color
+    let textColor: Color
+    let secondaryTextColor: Color
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
@@ -710,17 +849,17 @@ struct SettingsActionCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.headline)
-                        .foregroundColor(.white)
-                    
+                        .foregroundColor(textColor)
+
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.7))
+                        .foregroundColor(secondaryTextColor)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(secondaryTextColor)
                     .font(.system(size: 14))
             }
             .padding(.vertical, 12)
@@ -755,12 +894,12 @@ struct SnippetGridCard: View {
             VStack(spacing: 4) {
                 Text(title)
                     .font(.headline)
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
-                
+
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundColor(.white.opacity(0.7))
+                    .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
             }
@@ -790,11 +929,11 @@ struct StatCardView: View {
             
             Text(value)
                 .font(.title2.bold())
-                .foregroundColor(.white)
-            
+                .foregroundColor(.primary)
+
             Text(title)
                 .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)

@@ -81,12 +81,12 @@ struct LoginView: View {
                         
                         Text("Welcome Back")
                             .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                     }
-                    
+
                     Text("Sign in to continue exploring SwiftUI Snippets.")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.secondary)
                 }
                 .padding(.bottom, 8)
                 
@@ -116,7 +116,7 @@ struct LoginView: View {
                 } label: {
                     Text("Forgot password?")
                         .font(.footnote)
-                        .foregroundColor(.white.opacity(0.85))
+                        .foregroundColor(.secondary)
                         .underline()
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
@@ -174,7 +174,7 @@ struct LoginView: View {
                     navigationPath.append(AuthRoute.register)
                 } label: {
                     Text("Don't have an account? ")
-                        .foregroundColor(.white.opacity(0.8)) +
+                        .foregroundColor(.secondary) +
                     Text("Sign up")
                     //                        .foregroundColor(.cyan)
                         .fontWeight(.semibold)

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
@@ -25,6 +26,8 @@ struct RootView: View {
         }
         .onAppear {
             checkLoginStatus()
+            // Apply saved theme preference on app launch
+            applySavedTheme()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
             checkLoginStatus()
@@ -39,5 +42,26 @@ struct RootView: View {
 
     private func checkLoginStatus() {
         isLoggedIn = sessionManager.isLoggedIn
+    }
+
+    private func applySavedTheme() {
+        let darkModeEnabled = UserDefaults.standard.bool(forKey: "darkModeEnabled")
+        DispatchQueue.main.async {
+            if darkModeEnabled {
+                // Force dark mode
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                    windowScene.windows.forEach { window in
+                        window.overrideUserInterfaceStyle = .dark
+                    }
+                }
+            } else {
+                // Use system preference
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                    windowScene.windows.forEach { window in
+                        window.overrideUserInterfaceStyle = .unspecified
+                    }
+                }
+            }
+        }
     }
 }

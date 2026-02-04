@@ -23,7 +23,7 @@ A production-ready SwiftUI application featuring stunning iOS 26-style liquid gl
 - **Glassmorphism Cards**: Enhanced glass containers with gradient backgrounds and shadows
 - **Home Tab**: Welcome screen with activity feed, stats cards, and featured snippets
 - **Profile Tab**: User profile with avatar, session tracking, and info cards in glass containers
-- **Settings Tab**: App preferences with toggle switches and action cards in glass styling
+- **Settings Tab**: App preferences with dark mode toggle, notifications, and action cards
 - **Snippets Tab**: SwiftUI techniques showcase with grid layout and glass card containers
 - **Interactive Elements**: Toggle switches, buttons, and navigation all with glass effects
 - **Performance Optimized**: Efficient rendering with shared backgrounds and optimized layouts
@@ -189,6 +189,8 @@ final class UserSessionManager {
    - **Forgot Password**: Reset password → login with new credentials
    - **Persistence**: Close/reopen app → stay logged in with session data
    - **Dashboard**: Explore Home, Profile, Settings, and Snippets tabs
+   - **Dark Mode**: Go to Settings tab → toggle "Dark Mode" → see theme change
+   - **Theme Persistence**: Close/reopen app → theme preference remembered
    - **Logout**: Clear session and return to login screen
 
 ## 🎨 Customization Guide
@@ -202,7 +204,21 @@ final class UserSessionManager {
 - **Gradient Overlays**: Linear gradients on glass surfaces for depth
 - **Stroke Effects**: Gradient borders with varying opacity
 - **Dual Shadows**: Layered shadows for realistic depth perception
+- **Theme Adaptive**: Different colors and intensities for light/dark modes
 - **Adjust in**: `AppButtonView.swift`, `AppTextFieldView.swift`, `DashboardView.swift`
+
+### **Enhanced Dark/Light Mode**
+- **Vibrant Light Theme**: Gold, coral, mint, and peach gradients with subtle animation and enhanced saturation for a sunny, modern aesthetic
+- **Deep Dark Theme**: Navy and purple gradients for elegant, sophisticated contrast
+- **Adaptive Text Colors**: All text automatically adapts from white (dark mode) to black (light mode) for optimal readability
+- **Adaptive Icon Colors**: Icons change gradient colors based on theme (orange/pink for light, purple/blue for dark)
+- **Dynamic Animations**: Gentle gradient rotation animation in light theme for visual engagement
+- **Enhanced Brightness**: Slight brightness and saturation boosts for more vivid light theme colors
+- **Improved Contrast**: Better text readability with theme-appropriate overlays and adaptive colors
+- **UserDefaults Persistence**: Theme preference saved across app launches
+- **System Integration**: Respects system theme when dark mode disabled
+- **Force Dark Mode**: Override system preference with app-specific setting
+- **Visual Continuity**: Seamless transitions with adaptive UI elements
 
 ### **SwiftData Schema**
 - Modify `LocalUserEntity` in `LocalUserStore.swift`

@@ -6,14 +6,33 @@
 //
 
 import SwiftUI
+import UIKit
 
 @MainActor
 final class DashboardViewModel: ObservableObject {
     @Published var isLoggingOut = false
-    @Published var notificationsEnabled = true
-    @Published var darkModeEnabled = false
+    @Published var notificationsEnabled: Bool = UserDefaults.standard.bool(forKey: "notificationsEnabled") {
+        didSet {
+            UserDefaults.standard.set(notificationsEnabled, forKey: "notificationsEnabled")
+        }
+    }
+    @Published var darkModeEnabled: Bool = UserDefaults.standard.bool(forKey: "darkModeEnabled") {
+        didSet {
+            UserDefaults.standard.set(darkModeEnabled, forKey: "darkModeEnabled")
+            updateAppearance()
+        }
+    }
 
     private let sessionManager = UserSessionManager()
+
+    init() {
+        // Load saved preferences
+        notificationsEnabled = UserDefaults.standard.bool(forKey: "notificationsEnabled")
+        darkModeEnabled = UserDefaults.standard.bool(forKey: "darkModeEnabled")
+
+        // Apply initial appearance
+        updateAppearance()
+    }
 
     var username: String? {
         sessionManager.currentUsername
@@ -29,6 +48,26 @@ final class DashboardViewModel: ObservableObject {
 
     var loginTimestamp: Date? {
         sessionManager.loginTimestamp
+    }
+
+    func updateAppearance() {
+        DispatchQueue.main.async {
+            if self.darkModeEnabled {
+                // Force dark mode across all windows
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                    windowScene.windows.forEach { window in
+                        window.overrideUserInterfaceStyle = .dark
+                    }
+                }
+            } else {
+                // Use system preference
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                    windowScene.windows.forEach { window in
+                        window.overrideUserInterfaceStyle = .unspecified
+                    }
+                }
+            }
+        }
     }
 
     func logout() async {
