@@ -110,7 +110,7 @@ SwiftUI-Snippets/
 
 1.  **Clone the Repository**
     ```bash
-    git clone https://github.com/your-username/SwiftUI-Snippets.git
+    git clone https://github.com/asim1cva/SwiftUI-Snippets.git
     cd SwiftUI-Snippets
     ```
 2.  **Open in Xcode**
