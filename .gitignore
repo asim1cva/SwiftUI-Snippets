@@ -1,0 +1,93 @@
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## User-specific
+xcuserdata/
+
+## Build results
+DerivedData/
+build/
+Index.noindex/
+Logs/
+TestResults/
+
+## Scripts
+*.sh
+
+## Miscellaneous
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+!default.perspectivev3
+*.xccheckout
+*.moved-aside
+*.uitest
+*.plist
+!Info.plist
+!Settings.bundle/*.plist
+!*/*-Info.plist
+!Base.lproj/*.plist
+!*/*.entitlements
+
+## Bundles
+*.framework
+*.bundle
+*.xcassets
+
+## Documentation
+*.docset
+
+## Swift Package Manager
+.build/
+.swiftpm/
+
+## Crashlytics
+crashlytics.token
+crashlytics.plist
+
+## Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+## CocoaPods
+#
+# We recommend against committing the Pods directory to your repository.
+# However, if you'd like to include it, comment out the following line.
+# Pods/
+
+## Carthage
+Carthage/Build/
+
+## AccuRev
+.accurev.session
+
+## macOS
+.DS_Store
+*.swp
+*~
+.AppleDouble
+.LSOverride
+Icon
+
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
